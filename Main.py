@@ -89,14 +89,14 @@ if __name__ == '__main__':
           "and %d unlabeled reviews\n" % (train["review"].size,
                                           test["review"].size, unlabeled_train["review"].size))
 
-    modelName = "big300features_40minwords_10context"
+    modelName = "300features_40minwords_10context"
 
     # Создание модели Word2Vec
-    createModel(modelName)
+    #createModel(modelName)
 
     model = Word2Vec.load('Model//' + modelName)
     word_vectors = model.wv.vectors
-    num_clusters = int(word_vectors.shape[0] / 160) # Рекомендуется 5 слов на кластер
+    num_clusters = int(word_vectors.shape[0] / 5) # Рекомендуется 5 слов на кластер
     print("Running K means, where K = ", num_clusters)
     kmeans_clustering = KMeans(n_clusters=num_clusters)
     idx = kmeans_clustering.fit_predict(word_vectors)
@@ -114,14 +114,14 @@ if __name__ == '__main__':
     output = pd.DataFrame(data={"id": test["id"], "sentiment": result})
     output.to_csv("Data//Result.csv", index=False, quoting=3)
 
-    deviation = forest.predict(test_centroids) # deviation - отклонение(ошибка)
+    deviation = forest.predict(labelTest_centroids) # deviation - отклонение(ошибка)
     deviationDF = pd.DataFrame(data={"id": labelTest["id"], "sentiment" : labelTest["sentiment"],
                                      "deviationSentiment" : deviation})
     deviationDF.to_csv("Data//ResultDeviation.csv", index=False, quoting=3)
 
-    deviationCount = 0
-    for item in deviationDF.iterrows():
-        if item["sentiment"] == item["deviationSentiment"]:
+    deviationCount = 0.0
+    for index, row in deviationDF.iterrows():
+        if row["sentiment"] == row["deviationSentiment"]:
             deviationCount += 1
     print("Ошибка: ", (deviationCount/len(deviationDF)))
 

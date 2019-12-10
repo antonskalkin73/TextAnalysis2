@@ -7,7 +7,13 @@ from bs4 import BeautifulSoup
 import re
 import nltk
 import numpy as np
-from sklearn.externals._arff import xrange
+
+'''
+Running K means, where K =  3956
+Fitting a random forest to labeled training data...
+Ошибка:  0.7886002886002886
+Done:  3447.013335466385 seconds.
+'''
 
 
 def reviewToWordlist(review, removeStopwords=False):
@@ -38,6 +44,14 @@ def createModel(model_name):
 
     print("Parsing sentences from 2 set")
     for review in unlabeled_train["review"]:
+        sentences += review_to_sentences(review, tokenizer)
+
+    print("Parsing sentences from 3 set")
+    for review in test["review"]:
+        sentences += review_to_sentences(review, tokenizer)
+
+    print("Parsing sentences from 5 set")
+    for review in labelTest["review"]:
         sentences += review_to_sentences(review, tokenizer)
 
     print("Training Word2Vec model...")
@@ -82,17 +96,17 @@ if __name__ == '__main__':
     train = pd.read_csv('Data//labeledTrainData.tsv', header=0, delimiter="\t", quoting=3)
     unlabeled_train = pd.read_csv('Data//unlabeledTrainData.tsv', header=0, delimiter="\t", quoting=3)
     test = pd.read_csv('Data//testData.tsv', header=0, delimiter="\t", quoting=3)
-    labelTest = pd.read_csv('Data//LabeledTestData.tsv', header=0, delimiter=",", quoting=0)
+    labelTest = pd.read_csv('Data//LabeledTestData.csv', header=0, delimiter=",", quoting=0)
 
     # Verify the number of reviews that were read (100,000 in total)
     print("Read %d labeled train reviews, %d labeled test reviews, "
           "and %d unlabeled reviews\n" % (train["review"].size,
                                           test["review"].size, unlabeled_train["review"].size))
 
-    modelName = "300features_40minwords_10context"
+    modelName = "big300features_40minwords_10context"
 
     # Создание модели Word2Vec
-    #createModel(modelName)
+    createModel(modelName)
 
     model = Word2Vec.load('Model//' + modelName)
     word_vectors = model.wv.vectors

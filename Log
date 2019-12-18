@@ -1,0 +1,39 @@
+Running K means, where K =  3956
+Fitting a random forest to labeled training data...
+Точность:  0.7886002886002886
+Done:  3447.013335466385 seconds.
+300 numFeature
+
+
+Training Word2Vec model...
+Running K means, where K =  1573
+Fitting a random forest to labeled training data...
+10 слов на кластер
+60
+300 numFeature
+Точность:  0.7712842712842712
+Done:  1641.4395506381989 seconds.
+
+
+Running K means, where K =  2301
+Fitting a random forest to labeled training data...
+Количество простанств вектора слова:  400
+Минимальное кол-во слова:  100
+Точность:  0.7727272727272727
+Done:  2065.9830343723297 seconds.
+
+
+Running K means, where K =  2301
+Fitting a random forest to labeled training data...
+Количество простанств вектора слова:  200
+Минимальное кол-во слова:  100
+Точность:  0.7763347763347763
+Done:  2160.581603527069 seconds.
+
+
+Running K means, where K =  2301
+Fitting a random forest to labeled training data...
+Количество простанств вектора слова:  200
+Минимальное кол-во слова:  100
+Точность:  0.7763347763347763
+Done:  2160.581603527069 seconds.

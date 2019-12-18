@@ -7,12 +7,10 @@ from bs4 import BeautifulSoup
 import re
 import nltk
 import numpy as np
+import logging
 
 '''
-Running K means, where K =  3956
-Fitting a random forest to labeled training data...
-Ошибка:  0.7886002886002886
-Done:  3447.013335466385 seconds.
+
 '''
 
 
@@ -88,10 +86,10 @@ if __name__ == '__main__':
     start = time.time()
     # Настройка параметров
     numFeatures = 300  # Количество простанств вектора слова
-    minWordCount = 40  # Minimum word count
+    minWordCount = 50  # Minimum word count
     num_workers = 4  # Number of threads to run in parallel
     context = 10  # Context window size
-    downsampling = 1e-3  # Downsample setting for frequent words
+    downsampling = 1e-3  #  Downsample setting for frequent words
 
     train = pd.read_csv('Data//labeledTrainData.tsv', header=0, delimiter="\t", quoting=3)
     unlabeled_train = pd.read_csv('Data//unlabeledTrainData.tsv', header=0, delimiter="\t", quoting=3)
@@ -110,7 +108,7 @@ if __name__ == '__main__':
 
     model = Word2Vec.load('Model//' + modelName)
     word_vectors = model.wv.vectors
-    num_clusters = int(word_vectors.shape[0] / 5) # Рекомендуется 5 слов на кластер
+    num_clusters = int(word_vectors.shape[0] / 10) # Рекомендуется 5 слов на кластер
     print("Running K means, where K = ", num_clusters)
     kmeans_clustering = KMeans(n_clusters=num_clusters)
     idx = kmeans_clustering.fit_predict(word_vectors)
@@ -137,6 +135,8 @@ if __name__ == '__main__':
     for index, row in deviationDF.iterrows():
         if row["sentiment"] == row["deviationSentiment"]:
             deviationCount += 1
-    print("Ошибка: ", (deviationCount/len(deviationDF)))
-
+    print("Количество слов: ", word_vectors.shape[0] )
+    print("Количество простанств вектора слова: ", numFeatures)
+    print("Минимальное кол-во слова: ", minWordCount)
+    print("Точность: ", (deviationCount / len(deviationDF)))
     print("Done: ", time.time() - start, "seconds.")

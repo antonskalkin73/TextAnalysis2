@@ -87,7 +87,7 @@ if __name__ == '__main__':
     # Настройка параметров
     numFeatures = 300  # Количество простанств вектора слова
     minWordCount = 50  # Minimum word count
-    num_workers = 4  # Number of threads to run in parallel
+    num_workers = 16  # Number of threads to run in parallel
     context = 10  # Context window size
     downsampling = 1e-3  #  Downsample setting for frequent words
 

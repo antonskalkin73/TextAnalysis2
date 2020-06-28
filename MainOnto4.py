@@ -11,14 +11,18 @@ import logging
 from senticnet.senticnet import SenticNet
 
 
-listNegative = ['no', 'not']
+listNegative = ['no', 'not', 'don\'t', 'didn', 'won\'t', 'haven\'t', 'isn\'t', 'doesn\'t', 'nor', 'weren\'t',
+                'hadn\'t', 'isn', 'hasn\'t', 't', 'wasn\'t', 'didn\'t', 'couldn\'t']
 
 
 def reviewToWordlist(sentence):
     sentenceText = BeautifulSoup(sentence, features="html.parser").get_text()
     sentenceText = re.sub("[^a-zA-Z]", " ", sentenceText)  # Оставляем только английские буквы
     words = sentenceText.lower().split()
-    return (words)
+    stops = set(nltk.corpus.stopwords.words("english"))
+    stops.add("still")
+    words = [w for w in words if not w in stops or w in listNegative]
+    return words
 
 
 def reviewToSentences(reviewText):
@@ -50,9 +54,21 @@ def getMarkSentenseList(sentenseList):
                 collocationProperty = sn.data.get(stringWord)
                 if collocationProperty is not None:
                     if wordIndex-1 >= 0 and sentence[wordIndex-1] in listNegative:
-                        markWordList.append([float(collocationProperty[7])*-1, sentence[wordIndex-1]+'_'+stringWord])
+                        markWordList.append(
+                            {"plsn": float(collocationProperty[0])*-1,
+                            "attn": float(collocationProperty[1]),
+                            "snst": float(collocationProperty[2]),
+                            "aptt": float(collocationProperty[3]),
+                            "plrt": float(collocationProperty[7])*-1,
+                            "text": sentence[wordIndex-1]+'_'+stringWord})
                     else:
-                        markWordList.append([float(collocationProperty[7]), stringWord])
+                        markWordList.append(
+                            {"plsn": float(collocationProperty[0]),
+                            "attn": float(collocationProperty[1]),
+                            "snst": float(collocationProperty[2]),
+                            "aptt": float(collocationProperty[3]),
+                            "plrt": float(collocationProperty[7]),
+                            "text": stringWord})
                     break
             wordIndex += lenCollocation
         markSentenceList.append(markWordList)
@@ -69,14 +85,40 @@ def getReviewMark(reviewText):
     return markList
 
 
+def getReviewResult(sentenseList):
+    mark = 0
+    sentenseList = list(filter(None, sentenseList))
+    for sentence in sentenseList:
+        sentenseMark = 0
+        for ngram in sentence:
+            sentenseMark += ngram["plrt"]
+            # sentenseMark += (ngram["plsn"] + abs(ngram["attn"]) - abs(ngram["snst"]) + ngram["aptt"]) / 9
+        mark += sentenseMark / len(sentence)
+    return mark / len(sentenseList)
+
+
+def getLabel(result):
+    totalMark = 0.15
+    if result >= totalMark:
+        return 1
+    else:
+        return 0
+
+
 if __name__ == '__main__':
     start = time.time()
     train = pd.read_csv('Data//labeledSentensData.tsv', header=0, delimiter="\t", quoting=3)
     sn = SenticNet()
     tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
-    resultReviews = [ [review[0], getReviewMark(review[1]) ] for review in train.values]
-
-
+    countTrue = 0
+    reviews = [ [review[0], getReviewMark(review[1]) ] for review in train.values]
+    for review in reviews:
+        result = getReviewResult(review[1])
+        if review[0] == getLabel(result):
+            countTrue += 1
+    reviews = [ [review[0], getReviewResult(review[1]), review[1]] for review in reviews ]
+    print("acuracy = ", countTrue/len(reviews))
+    # np.array([ [review[0], review[1]] for review in reviews if review[0] == 1 ]).transpose()
     print("Done: ", time.time() - start, "seconds.")
     print()
